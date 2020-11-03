@@ -1,0 +1,56 @@
+<details>
+<summary>priority_cols</summary>
+  
+## Documentation    
+
+	priority_cols(df, priority='both', extras=None, drop_cols=None)
+
+    Spits out NSSP priority columns from a dataframe.
+    Priority can be 1,2, or both.
+    Extras indicate additional columns from the original dataframe you would like the output to contain.
+    Drop_Cols indicate columns that you want to NOT include
+    Parameters
+    ----------
+    df: pandas dataframe, required
+    *priority: str, optional (default is both)
+            'both' - returns priority 1 and priority 2 element columns
+            'one' or '1' - returns priority 1 element columns only
+            'two' or '2' - returns priority 2 element columns only
+    *extras:  list, optional (default is None)
+            list must contain valid column values from df.
+    *drop_cols:  list, optional (default is None)
+            list must contain valid column values from df.
+    Returns
+    -------
+    pandas Dataframe
+
+   
+## Code Examples 
+    
+
+```
+# import the library and all its functions
+from HL7reporting import *
+
+# read in data
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(data1,Timed=False,
+                                    Priority_only=True,outfile='None')
+
+
+# take the priority element columns from our output dataframe
+#### remove two columns that are processed backend (always NaN)
+only_priority1_df = priority_cols(parsed_df,priority='1',drop_cols=['Site_ID','C_Facility_ID'])
+
+```
+
+## Visualization of Output
+
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/priority_cols.png" alt="priority_cols_Visual">
+
+*note personal details are replaced with random ints and NaN values
+*also note the lower number of columns
+<br>
+</details>

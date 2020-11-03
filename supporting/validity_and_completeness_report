@@ -1,0 +1,63 @@
+<details>
+<summary>validity_and_completeness_report</summary>
+  
+## Documentation    
+
+    validity_and_completeness_report(df,description='long',visit_count=False,outfile=None, Timed=True)
+    
+    dataframe1 -> Returns completenesss report by hospital with facility,element,percentmissing,percentinvalid,description
+    dataframe2 -> Determines the incompleteness (0), invalid (1), or valid and complete (2) for every element in all messages
+    
+    
+    Parameters
+    ----------
+    df: pandas DataFrame, required (output from NSSP_Element_Grabber() funciton)
+    
+    description:  str, optional.  (Either 'long' or 'short')
+        if 'short', description of location is shorter and less descriptive
+        elif 'long', description is sentence structured and descriptive
+    
+    visit_count:  bool, optional
+        if True, add the number of visits to dataframe2
+        
+    outfile: string, optional
+        if True, send excel file (in current directory).  Name defined by outfile
+        *DO NOT INCLUDE .xlsx or full path
+    
+    
+    Returns
+    -------
+    df1
+        Dataframe showing issues in messages for each hospitals.  Report structure
+    
+    df2
+        Dataframe assessing all messages for incomlete,invalid,valid elements represented as 0s, 1s, and 2s
+        
+   
+## Code Examples 
+    
+
+```
+# import the library and all its functions
+from HL7reporting import *
+
+# read in data
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(data1,Timed=False,
+                                    Priority_only=True,outfile='None')
+
+
+# run the validity function on it
+val = validity_and_completeness_report(parsed_df, description='long')[0] # don't care about array of 0, 1, 2 for now
+
+
+```
+
+## Visualization of Output[0]
+
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/validity_and_completeness_report.png" alt="validity_and_completeness_report_Visual">
+
+<br>
+</details>

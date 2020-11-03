@@ -1,0 +1,139 @@
+<details>
+<summary>issues_in_messages</summary>
+  
+## Documentation    
+
+    issues_in_messages(df, Timed=True, combine_issues_on_message = False, split_issue_column = False):
+ 
+    Description
+	----------
+    Processes dataframe outputted by NSSP_Element_Grabber() function.
+    Outputs dataframe describing message errors.  See optional args for output dataframe customation.
+    
+    Parameters
+    ----------
+    
+    df - required, pandas Dataframe, output from NSSP_Element_Grabber() function
+    *Timed - optional, bool, default is True.  Outputs runtime in seconds upon completion.
+    *combine_issues_on_message - optional, bool, default is False.  SEE (2) below
+    *split_issue_column - optional, bool, default is False.  SEE (3) below
+    
+    
+    NOTE:  only one of 'combine_issues_on_message' or 'split_issue_column' can be True
+    
+    Returns
+    ----------------------------------------------------------------------------
+    Pandas dataframe. Columns include:
+    
+    (1)
+    DEFAULT: WHEN split_issue_colum = False , combine_issue_on_message = False
+    
+    Group_ID -> string concatenation of FACILITY_NAME|PATIENT_MRN|PATIENT_VISIT_NUMBER
+    MESSAGE -> full original message
+    Issue -> string concatenation of 'error_type|element_name|priority|description|valid_options|message_value|suggestion|comment'
+    
+    ------
+    
+    (2)
+    WHEN combine_issue_on_message = True, split_issue_colum = False 
+    
+    Group_ID -> string concatenation of FACILITY_NAME|PATIENT_MRN|PATIENT_VISIT_NUMBER
+    MESSAGE -> full original message
+    Issue -> string concatenation of 'error_type|element_name|priority|description|valid_options|message_value|suggestion|comment'
+             MULTIPLE string concatenations per cell, separated by newline '\n'
+    
+    Num_Missings -> number of issues that had a type of 'Missing or Null'
+    Num_Invalids -> number of issues that had a type of 'Invalid'
+    Num_Issues_Total -> number of total issues
+    
+    ------
+    
+    (3)
+    WHEN combine_issue_on_message = False , split_issue_colum = True
+    
+    Group_ID -> string concatenation of FACILITY_NAME|PATIENT_MRN|PATIENT_VISIT_NUMBER
+    MESSAGE -> full original message
+    error_type -> 'Missing or Null' or 'Invalid'
+    element_name -> NSSP Priority Element name with issue
+    priority -> NSSP Priority '1' or '2'
+    description -> Describes location/parameters of element in HL7 message
+    valid_options -> IF element can be checked for validity, describes a valid entry.
+    message_value -> IF element was determined as invalid, give the invalid element value.
+    suggestion -> IF element was determined as invalid, give an educated guess as to what they meant.
+    comment -> IF element was determined as invalid, give feedback/advice on the message error.
+
+## Code Examples 
+    
+Version 1:
+```
+# import the library and all its functions
+from HL7reporting import *
+
+# read in data
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(data1,Timed=False,
+                                    Priority_only=True,outfile='None')
+
+
+# Find issues in messages
+split_by_issue = issues_in_messages(parsed_df, split_issue_column=True)
+
+# Get the facility name from the grouper ID
+split_by_issue['Fac_Name'] = split_by_issue.Grouper_ID.str.split('\|').str[0]
+
+# First sort the values so that all facility rows are next to one another, then by message similarly
+split_by_issue = split_by_issue.sort_values(['Fac_Name','Grouper_ID','MESSAGE','Priority'])
+
+# Set the indices so that when we export to excel, the index cells will merge making it look pretty
+split_by_issue = split_by_issue.set_index(['Fac_Name','Grouper_ID','MESSAGE','Issue_Type'])
+
+# Send it to an excel file!
+split_by_issue.to_excel('split_by_issue_version1.xlsx')
+```
+Version 2:
+```
+# import the library and all its functions
+from HL7reporting import *
+
+# read in data
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(data1,Timed=False,
+                                    Priority_only=True,outfile='None')
+
+
+# Find issues in messages
+comb_issues = issues_in_messages(parsed_df, combine_issues_on_message=True)
+
+# Get the facility name
+comb_issues['Fac_Name'] = comb_issues.Grouper_ID.str.split('\|').str[0]
+
+# Make first issue start with bullet point
+comb_issues['Issue'] = comb_issues['Issue'].str.replace('^(.*)','• \g<1>',regex=True)
+
+# Make each new line have a bullet point.
+comb_issues['Issue'] = comb_issues['Issue'].str.replace('\n','\n• ')
+
+# First sort the values so that all facility rows are next to one another, then by message similarly
+comb_issues = comb_issues.sort_values(['Fac_Name','Grouper_ID','MESSAGE'])
+
+# Set the indices so that when we export to excel, the index cells will merge making it look pretty
+comb_issues = comb_issues.set_index(['Fac_Name','Grouper_ID','MESSAGE','Issue'])
+
+# Send it to an excel file!
+comb_issues.to_excel('comb_issue_version2.xlsx')
+```
+
+## Visualization of Output
+
+Version 1
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/issues_in_messages_v1.png" alt="issues_in_messages_Visual1">
+<br>
+
+Version 2 
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/issues_in_messages_v2.png" alt="issues_in_messages_Visual2">
+<br>
+</details>

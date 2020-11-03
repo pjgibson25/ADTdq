@@ -1,0 +1,75 @@
+<details>
+<summary>NSSP_Element_Grabber</summary>
+  
+## Documentation    
+
+    
+    NSSP_Element_Grabber(data,Timed = True, Priority_only=False, outfile='None')
+    
+
+    Creates dataframe of important elements from PHESS data.
+
+    NOTE:  Your input should contain column titles:
+		MESSAGE, PATIENT_VISIT_NUMBER, PATIENT_MRN,
+		FACILITY_NAME
+    
+    	if you don't have visitnum, mrn, or facname, create empty cols
+ 	appended to your message column
+    
+    Parameters
+    ----------
+    data: pandas DataFrame, required, from PHESS sql pull
+    
+    Timed:  Default is True.  Prints total runtime at end.
+    Priority_only:  Default is False.  
+        If True, only gives priority 1 or 2 elements
+    outfile:  Default is 'None':
+        Replace with file name for dataframe to be wrote to as csv
+        Will be located in working directory.
+        DO NOT INCLUDE .csv IF YOU CHOOSE TO MAKE ONE
+    
+    Returns
+    -------
+    dataframe with columns of NSSP priority elements for each message (row)
+
+   
+## Code Examples 
+    
+
+```
+# import the library and all its functions
+from HL7reporting import *
+
+# read in data
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(data1,Timed=False,
+                                    Priority_only=True,outfile='None')
+
+```
+
+*if you don't have mrn, visit_num, or facility_name
+
+```
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# create new dataframe with correct column names
+cols = ['MESSAGE','PATIENT_MRN', 'PATIENT_VISIT_NUMBER', 'FACILITY_NAME']
+new_input_dataframe = pd.DataFrame(columns=cols)
+
+# define new dataframe column using our data
+new_input_dataframe['MESSAGE'] = data1['message'] # replace message according to correct column title of data1
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(new_input_dataframe, Timed=False,
+                                    Priority_only=True,outfile='None')
+```
+
+## Visualization of Output
+
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/excel_out_v1.png" alt="nssp_element_grabber_visual">
+
+*note personal details are replaced with random ints and NaN values
+<br>
+</details>

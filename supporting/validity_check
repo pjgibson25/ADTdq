@@ -1,0 +1,52 @@
+<details>
+<summary>validity_check</summary>
+  
+## Documentation    
+
+    validity_check(df, Timed=True)
+    
+    Checks to see which elements in a dataframe's specific NSSP priority columns meet NSSP validity standards.
+    Returns a True/False dataframe with FACILITY_NAME,PATIENT_MRN,PATIENT_VISIT_NUMBER as only string-type columns
+    
+    Parameters
+    ----------
+    
+    df - required, pandas Dataframe, output from NSSP_Element_Grabber() function    
+    Timed - optional, boolean (True/False), default is True.  Returns time in seconds of completion.
+    
+    Returns
+    --------
+    validity_report - True/False dataframe with FACILITY_NAME,PATIENT_MRN,PATIENT_VISIT_NUMBER as only string-type columns
+    
+   
+## Code Examples 
+    
+
+```
+# import the library and all its functions
+from HL7reporting import *
+
+# read in data
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(data1,Timed=False,
+                                    Priority_only=True,outfile='None')
+
+
+# take the priority element columns from our output dataframe
+#### remove two columns that are processed backend (always NaN)
+only_priority1_df = priority_cols(parsed_df,priority='1',drop_cols=['Site_ID','C_Facility_ID'])
+
+# run the validity check function on it
+val = validity_check(only_priority1_df)
+
+```
+
+## Visualization of Output
+
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/validity_check.png" alt="validity_check_Visual">
+
+*note the lower number of columns.  Not all columns able to be assessed for validity
+<br>
+</details>

@@ -1,0 +1,56 @@
+<details>
+<summary>Visualize_Facility_DQ</summary>
+  
+## Documentation    
+
+    Visualize_Facility_DQ(df, fac_name, hide_yticks = False, Timed = True)
+    
+	
+    Returns Visualization of data quality in the form of a heatmap.
+    Rows are all individual visits for the inputted facility.
+    Columns are NSSP Priority elements that can be checked for validity.
+    Color shows valid entries (green), invalid entries (yellow), and absent entries (red)
+    
+    Parameters
+    ----------
+    
+    df - required, pandas Dataframe, output from NSSP_Element_Grabber() function
+    fac_name - required, str, valid name of facility.
+        if unsure of valid entry options, use the following code for options:
+        df['FACILITY_NAME'].unique()   # may need to change for your df name
+    
+    Returns
+    --------
+    out[0] = Pandas dataframe used to create visualization.  2D composed of 0s (red), 1s (yellow), 2s (green)
+    out[1] = Pandas dataframe of data behind visit.  Multiple HL7 messages composing 1 visit concatenated by '~' character
+    
+    Output
+    -------
+    sns.heatmap visualization
+
+## Code Examples 
+    
+
+```
+# import the library and all its functions
+from HL7reporting import *
+
+# read in data
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(data1,Timed=False,
+                                    Priority_only=True,outfile='None')
+
+# produce the visualization
+visual = Visualize_Facility_DQ(parsed_df, 'hospital_name')
+```
+
+## Visualization of Output
+
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/Visualize_Facility_DQ.png" alt="Visualize_Facility_DQ_Visual">
+
+*note that this only produces the visualization for 1 facility
+
+<br>
+</details>

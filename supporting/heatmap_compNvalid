@@ -1,0 +1,60 @@
+<details>
+<summary>heatmap_compNvalid</summary>
+  
+## Documentation    
+
+    heatmap_compNvalid(df, outfilename=None, daterange=None, hospitals='IHA')
+    
+    Create 2 heatmap subplots of elements that:
+        (left) can be assessed for completion
+        (right) can be assessed for validity
+        
+    Input
+    -----
+    df - pd.Dataframe, required
+        Output from NSSP_Element_Grabber() function
+    
+    outfilename - str, optional
+        Specify the name of HTML file to be written to ../figures/   
+        *** DO NOT INCLUDE .html ***
+    
+    daterange - str, optional
+        Specify the range that the assessment is being taken over.
+        Example:  'Sep 7, 2020 - Sep 14, 2020'
+    
+    hospitals - str, optional
+        Specify the name of the hospitals we are working with
+    
+    
+    Output
+    ------
+    completion_df - the dataframe that makes up the completion heatmap
+    validity_df - the dataframe that makes up the validity heatmap
+    
+   
+## Code Examples 
+    
+
+```
+# import the library and all its functions
+from HL7reporting import *
+
+# read in data
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(data1,Timed=False,
+                                    Priority_only=True,outfile='None')
+
+
+heatmap_compNvalid(parsed_df, outfilename='heatmap visualization completion and validity')
+
+```
+
+## Visualization of Output
+
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/heatmap_compNvalidpng" alt="heatmap_compNvalid_Visual">
+
+*note that typically the y-axis will show facility names.  Hidden here for confidentiality.
+<br>
+</details>
