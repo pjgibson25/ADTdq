@@ -675,5 +675,5 @@ PJ Gibson - Data Analyst for Indiana State Department of Health
 Harold assigned me this project, gave me relevant supporting documentation, and helped me along the way with miscellaneous troubleshooting.
 * Matthew Simmons - Data Analyst for Indiana State Department of Health.
 Matthew helped walk me through some troubleshooting and was a supportive figure throughout the project.
-* Shuennhau Chang, Logan Downing, Ryan Hastings, Nicholas Hinkley, Rachel Winchell.
+* Ben Sewell, Shuennhau Chang, Logan Downing, Ryan Hastings, Nicholas Hinkley, Rachel Winchell.
 Members of my informatics team that also supported me indirectly!
