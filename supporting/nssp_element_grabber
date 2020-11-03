@@ -35,7 +35,6 @@
    
 ## Code Examples 
     
-
 ```
 # import the library and all its functions
 from HL7reporting import *
