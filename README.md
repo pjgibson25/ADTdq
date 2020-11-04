@@ -1,6 +1,6 @@
-# HL7reporting
+# ADTdq
 
-[Github Project](https://github.com/pjgibson25/HL7reporting)
+[Github Project](https://github.com/pjgibson25/ADTdq)
 
 
 ## Background 
@@ -23,6 +23,7 @@ The main purpose of this package is to give data quality analysis functions to w
 
 
 ## Functions
+<p>(click on function name for extended description)</p>
 -----------------------
 
 <details>
@@ -64,7 +65,7 @@ The main purpose of this package is to give data quality analysis functions to w
     
 ```
 # import the library and all its functions
-from HL7reporting import *
+from ADTdq import *
 
 # read in data
 data1 = pd.read_csv('somefile.csv',engine='python')
@@ -94,7 +95,7 @@ parsed_df = NSSP_Element_Grabber(new_input_dataframe, Timed=False,
 
 ## Visualization of Output
 
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/excel_out_v1.png" alt="nssp_element_grabber_visual">
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/nssp_element_grabber.png" alt="nssp_element_grabber_visual">
 
 *note personal details are replaced with random ints and NaN values
 <br>
@@ -134,7 +135,7 @@ parsed_df = NSSP_Element_Grabber(new_input_dataframe, Timed=False,
 
 ```
 # import the library and all its functions
-from HL7reporting import *
+from ADTdq import *
 
 # read in data
 data1 = pd.read_csv('somefile.csv',engine='python')
@@ -152,7 +153,7 @@ only_priority1_df = priority_cols(parsed_df,priority='1',drop_cols=['Site_ID','C
 
 ## Visualization of Output
 
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/priority_cols.png" alt="priority_cols_Visual">
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/priority_cols.png" alt="priority_cols_Visual">
 
 *note personal details are replaced with random ints and NaN values
 *also note the lower number of columns
@@ -186,7 +187,7 @@ only_priority1_df = priority_cols(parsed_df,priority='1',drop_cols=['Site_ID','C
 
 ```
 # import the library and all its functions
-from HL7reporting import *
+from ADTdq import *
 
 # read in data
 data1 = pd.read_csv('somefile.csv',engine='python')
@@ -207,7 +208,7 @@ val = validity_check(only_priority1_df)
 
 ## Visualization of Output
 
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/validity_check.png" alt="validity_check_Visual">
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/validity_check.png" alt="validity_check_Visual">
 
 *note the lower number of columns.  Not all columns able to be assessed for validity
 <br>
@@ -252,7 +253,7 @@ val = validity_check(only_priority1_df)
 
 ```
 # import the library and all its functions
-from HL7reporting import *
+from ADTdq import *
 
 # read in data
 data1 = pd.read_csv('somefile.csv',engine='python')
@@ -267,7 +268,7 @@ visual = Visualize_Facility_DQ(parsed_df, 'hospital_name')
 
 ## Visualization of Output
 
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/Visualize_Facility_DQ.png" alt="Visualize_Facility_DQ_Visual">
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/Visualize_Facility_DQ.png" alt="Visualize_Facility_DQ_Visual">
 
 *note that this only produces the visualization for 1 facility
 
@@ -346,7 +347,7 @@ visual = Visualize_Facility_DQ(parsed_df, 'hospital_name')
 Version 1:
 ```
 # import the library and all its functions
-from HL7reporting import *
+from ADTdq import *
 
 # read in data
 data1 = pd.read_csv('somefile.csv',engine='python')
@@ -374,7 +375,7 @@ split_by_issue.to_excel('split_by_issue_version1.xlsx')
 Version 2:
 ```
 # import the library and all its functions
-from HL7reporting import *
+from ADTdq import *
 
 # read in data
 data1 = pd.read_csv('somefile.csv',engine='python')
@@ -409,11 +410,11 @@ comb_issues.to_excel('comb_issue_version2.xlsx')
 ## Visualization of Output
 
 Version 1
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/issues_in_messages_v1.png" alt="issues_in_messages_Visual1">
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/issues_in_messages_v1.png" alt="issues_in_messages_Visual1">
 <br>
 
 Version 2 
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/issues_in_messages_v2.png" alt="issues_in_messages_Visual2">
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/issues_in_messages_v2.png" alt="issues_in_messages_Visual2">
 <br>
 </details>
 
@@ -460,7 +461,7 @@ Version 2
 
 ```
 # import the library and all its functions
-from HL7reporting import *
+from ADTdq import *
 
 # read in data
 data1 = pd.read_csv('somefile.csv',engine='python')
@@ -478,7 +479,7 @@ val = validity_and_completeness_report(parsed_df, description='long')[0] # don't
 
 ## Visualization of Output[0]
 
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/validity_and_completeness_report.png" alt="validity_and_completeness_report_Visual">
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/validity_and_completeness_report.png" alt="validity_and_completeness_report_Visual">
 
 <br>
 </details>
@@ -535,7 +536,7 @@ val = validity_and_completeness_report(parsed_df, description='long')[0] # don't
 
 ```
 # import the library and all its functions
-from HL7reporting import *
+from ADTdq import *
 
 # Read in the two datasets (already ran NSSP_Element_Grabber on)
 before = pd.read_csv('path_to_parsed_df_file1',engine='python')
@@ -547,7 +548,7 @@ Visualization_interactive(before,after,['Oct 11 2020','Oct 28 2020'],priority='b
 
 ## Visualization of Output
 
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/Visualization_interactive.png" alt="Visualization_interactive_Visual">
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/Visualization_interactive.png" alt="Visualization_interactive_Visual">
 
 *note that this image above is simply an image.  In reality the output is an interactive HTML file with hover_over capabilities
 *also note that the y axis is marked over and typically contains facility names.
@@ -596,7 +597,7 @@ Visualization_interactive(before,after,['Oct 11 2020','Oct 28 2020'],priority='b
 
 ```
 # import the library and all its functions
-from HL7reporting import *
+from ADTdq import *
 
 # read in data
 data1 = pd.read_csv('somefile.csv',engine='python')
@@ -612,7 +613,7 @@ heatmap_compNvalid(parsed_df, outfilename='heatmap visualization completion and 
 
 ## Visualization of Output
 
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/heatmap_compNvalidpng" alt="heatmap_compNvalid_Visual">
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/heatmap_compNvalid.png" alt="heatmap_compNvalid_Visual">
 
 *note that typically the y-axis will show facility names.  Hidden here for confidentiality.
 <br>
@@ -641,13 +642,13 @@ The output will show you all the function documentation including a brief descri
 #### Why Python?
 
 I work entirely in Python.
-In the field of public health informatics, R is the most popular programming language.
+In the field of public health informatics, SASS is the most popular programming language, perhaps followed by R (at least in syndromic surveillance).
 I have created this package to run as intuitively as possible with a minimal amount of python knowledge.
 I could be wrong, but I believe that one day, public health informatics may become Python-dominant, so this package could help as an introduction to the environment to those unfamiliar.
 
 #### For plottting, what if I want to make small changes such as color changes, formatting, or simple customizing?
 
-Right now I don't have things set up for that sort of work.  My best solution would be for you to dive into my Github reposiory python file linked [here](https://github.com/pjgibson25/HL7reporting/blob/master/HL7reporting/__init__.py).  You can copy the defined functions into your document and make minor adjustments as you see fit.
+Right now I don't have things set up for that sort of work.  My best solution would be for you to dive into my Github reposiory python file linked [here](https://github.com/pjgibson25/ADTdq/blob/master/ADTdq/__init__.py).  You can copy the defined functions into your document and make minor adjustments as you see fit.
 
 
 #### Why isn't the NSSP_Element_Grabber() function working?
