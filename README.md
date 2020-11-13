@@ -31,71 +31,75 @@ The main purpose of this package is to give data quality analysis functions to w
   
 ## Documentation    
 
+    NSSP_Element_Grabber(data,explicit_search=None,Priority_only=False,outfile='None',no_FAC=False,no_MRN=False,no_VisNum=False):
     
-    NSSP_Element_Grabber(data,Timed = True, Priority_only=False, outfile='None')
-    
-
     Creates dataframe of important elements from PHESS data.
+    Timed with cool updating progressbar (tqdm library).
 
-    NOTE:  Your input should contain column titles:
-		MESSAGE, PATIENT_VISIT_NUMBER, PATIENT_MRN,
-		FACILITY_NAME
+    NOTE: Your input should contain the column titles:
+	   MESSAGE , FACILITY_NAME
     
-    	if you don't have visitnum, mrn, or facname, create empty cols
- 	appended to your message column
-    
+
     Parameters
     ----------
-    data: pandas DataFrame, required, from PHESS sql pull
-    
-    Timed:  Default is True.  Prints total runtime at end.
-    Priority_only:  Default is False.  
-        If True, only gives priority 1 or 2 elements
-    outfile:  Default is 'None':
-        Replace with file name for dataframe to be wrote to as csv
-        Will be located in working directory.
-        DO NOT INCLUDE .csv IF YOU CHOOSE TO MAKE ONE
+    data: pandas DataFrame, required
+	- input containing columns MESSAGE, FACILITY_NAME
+
+    explicit_search: list, optional (default is None)
+	- list of priority element names you want specifically.
+	  Use argument-less list_elements() function to see all options
+
+    Priority_only:  bool, optional (default is False)  
+        - If True, only gives priority 1 or 2 elements
+
+    outfile:  str, optional (default is 'None')
+        - Replace with file name for dataframe to be wrote to as csv
+            Will be located in working directory.
+            DO NOT INCLUDE .csv IF YOU CHOOSE TO MAKE ONE
+
+    no_FAC: Bool, optional (default is False)
+	- If you don't have a FACILITY_NAME in your input, change to True
+	  NOTE: without a FACILITY_NAME, usage of other functions within library can return errors
+
+    no_MRN: Bool, optional (default is False)
+	- If you do not want output to contain MRN information, change to True
+	  NOTE: without a MRN, usage of other functions within library can return errors
+
+    no_VisNum: Bool, optional (default is False)
+	- If you do not want output to contain patient_visit_number information, change to True
+	  NOTE: without a VisNum, usage of other functions within library can return errors
     
     Returns
     -------
-    dataframe with columns of NSSP priority elements for each message (row)
+    dataframe
+        
 
-   
 ## Code Examples 
     
 ```
 # import the library and all its functions
-from ADTdq import *
+from HL7reporting import *
 
 # read in data
 data1 = pd.read_csv('somefile.csv',engine='python')
 
 # process through NSSP_Element_Grabber() function
-parsed_df = NSSP_Element_Grabber(data1,Timed=False,
-                                    Priority_only=True,outfile='None')
+parsed_df = NSSP_Element_Grabber(data1, Priority_only=True,outfile='nameofoutputfile')
 
 ```
 
-*if you don't have mrn, visit_num, or facility_name
+*if you don't have no facility_name
 
 ```
 data1 = pd.read_csv('somefile.csv',engine='python')
 
-# create new dataframe with correct column names
-cols = ['MESSAGE','PATIENT_MRN', 'PATIENT_VISIT_NUMBER', 'FACILITY_NAME']
-new_input_dataframe = pd.DataFrame(columns=cols)
-
-# define new dataframe column using our data
-new_input_dataframe['MESSAGE'] = data1['message'] # replace message according to correct column title of data1
-
 # process through NSSP_Element_Grabber() function
-parsed_df = NSSP_Element_Grabber(new_input_dataframe, Timed=False,
-                                    Priority_only=True,outfile='None')
+parsed_df = NSSP_Element_Grabber(new_input_dataframe, Priority_only=True,outfile='outfilename', no_FAC=True)
 ```
 
 ## Visualization of Output
 
-<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/nssp_element_grabber.png" alt="nssp_element_grabber_visual">
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/excel_out_v1.png" alt="nssp_element_grabber_visual">
 
 *note personal details are replaced with random ints and NaN values
 <br>
@@ -486,19 +490,19 @@ val = validity_and_completeness_report(parsed_df, description='long')[0] # don't
 
 
 
-
 <details>
 <summary>Visualization_interactive</summary>
   
 ## Documentation    
 
-    Visualization_interactive(df_before,df_after,str_date_list,priority='both_combined',outfile=False,show_plot=False,Timed=True)
-    
+    Visualization_interactive(df_before,df_after,str_date_list,priority='both_combined',grid=True,outfile=False,show_plot=False,Timed=True):
+
 
     Creates an annotated heatmap that is interactive with hoverover.
     Heatmap colors represent data completeness as of the first date
     Annotations show the completion percent change with respect to the second date
         (+ indicates increased completeness)
+
     Parameters
     ----------
     df_before : pandas.DataFrame, required (output of NSSP_Element_Grabber() Function)
@@ -514,7 +518,12 @@ val = validity_and_completeness_report(parsed_df, description='long')[0] # don't
         -describes output visualization.  Valid options include 'both_combined','both_individuals','1','2'
             both_combined writes all NSSP Priority 1&2 to one x axis
             both_individual writes two separate figures for Priority 1 and 2 respectively
-            
+    
+    *grid: bool, optional (default = True)
+	-describes output visualization.  Draws grid lines over all heatmap cells.
+	    NOTE: cyan line divides priority 1 and priority 2 elements regardless of argument.
+		  only relevant for priority->both combined            
+
     *outfile: bool, optional (default = False)
         -writes .html file to folder '../figures/'
         -if str_date_list=['Feb 1 2020','Aug 31 2020'] and priority='both combined',
@@ -528,7 +537,7 @@ val = validity_and_completeness_report(parsed_df, description='long')[0] # don't
     
     Returns
     -------
-    nothing.  Specify arguments to show or save plot.
+    nothing
         
    
 ## Code Examples 
@@ -536,7 +545,7 @@ val = validity_and_completeness_report(parsed_df, description='long')[0] # don't
 
 ```
 # import the library and all its functions
-from ADTdq import *
+from HL7reporting import *
 
 # Read in the two datasets (already ran NSSP_Element_Grabber on)
 before = pd.read_csv('path_to_parsed_df_file1',engine='python')
@@ -548,7 +557,7 @@ Visualization_interactive(before,after,['Oct 11 2020','Oct 28 2020'],priority='b
 
 ## Visualization of Output
 
-<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/Visualization_interactive.png" alt="Visualization_interactive_Visual">
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/Visualization_interactive.png" alt="Visualization_interactive_Visual">
 
 *note that this image above is simply an image.  In reality the output is an interactive HTML file with hover_over capabilities
 *also note that the y axis is marked over and typically contains facility names.

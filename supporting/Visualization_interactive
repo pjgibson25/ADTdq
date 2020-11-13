@@ -3,13 +3,14 @@
   
 ## Documentation    
 
-    Visualization_interactive(df_before,df_after,str_date_list,priority='both_combined',outfile=False,show_plot=False,Timed=True)
-    
+    Visualization_interactive(df_before,df_after,str_date_list,priority='both_combined',grid=True,outfile=False,show_plot=False,Timed=True):
+
 
     Creates an annotated heatmap that is interactive with hoverover.
     Heatmap colors represent data completeness as of the first date
     Annotations show the completion percent change with respect to the second date
         (+ indicates increased completeness)
+
     Parameters
     ----------
     df_before : pandas.DataFrame, required (output of NSSP_Element_Grabber() Function)
@@ -25,7 +26,12 @@
         -describes output visualization.  Valid options include 'both_combined','both_individuals','1','2'
             both_combined writes all NSSP Priority 1&2 to one x axis
             both_individual writes two separate figures for Priority 1 and 2 respectively
-            
+    
+    *grid: bool, optional (default = True)
+	-describes output visualization.  Draws grid lines over all heatmap cells.
+	    NOTE: cyan line divides priority 1 and priority 2 elements regardless of argument.
+		  only relevant for priority->both combined            
+
     *outfile: bool, optional (default = False)
         -writes .html file to folder '../figures/'
         -if str_date_list=['Feb 1 2020','Aug 31 2020'] and priority='both combined',
@@ -39,7 +45,7 @@
     
     Returns
     -------
-    nothing.  Specify arguments to show or save plot.
+    nothing
         
    
 ## Code Examples 

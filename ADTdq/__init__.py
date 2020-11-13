@@ -28,6 +28,7 @@ from IPython.display import clear_output
 # For accessing supporting docs within supporting folder
 import pkg_resources
 
+from tqdm import tqdm
 
 
 
@@ -836,21 +837,78 @@ def DI_One_CONC(field,ind,m,df,z,col_name):
 
 ############################################################################################################
 
-def NSSP_Element_Grabber(data,Timed = True, Priority_only=False, outfile='None'):
+def list_elements(include_priority=False):
     '''
-    Creates dataframe of important elements from PHESS data.
+    Displays all potential elements we can search for
     
     Parameters
     ----------
-    data: pandas DataFrame, required, from PHESS sql pull
+    include_priority: bool, optional (default is False)  
+	- returns 2 column pandas dataframe.  Element Name & Priority
+
     
-    Timed:  Default is True.  Prints total runtime at end.
-    Priority_only:  Default is False.  
-        If True, only gives priority 1 or 2 elements
-    outfile:  Default is 'None':
-        Replace with file name for dataframe to be wrote to as csv
-        Will be located in working directory.
-        DO NOT INCLUDE .csv IF YOU CHOOSE TO MAKE ONE
+    Returns
+    -------
+    np.array() (list-like) that contains all elements we can search for
+    dataframe IF include_priority = True
+    '''
+
+
+    els = pd.read_excel('supporting/NSSP_Element_Reader.xlsx')
+    if include_priority == True:
+        return els[['Processed Column','Priority']]
+    else:
+        return np.array(els['Processed Column'])
+
+
+############################################################################################################
+
+
+
+
+
+
+def NSSP_Element_Grabber(data,explicit_search=None,Priority_only=False,outfile='None',no_FAC=False,no_MRN=False,no_VisNum=False):
+    '''
+    Creates dataframe of important elements from PHESS data.
+    Timed with cool updating progressbar (tqdm library).
+
+    NOTE: Your input should contain the column titles:
+	   MESSAGE , FACILITY_NAME
+    
+
+    Parameters
+    ----------
+    data: pandas DataFrame, required
+	- input containing columns MESSAGE, FACILITY_NAME
+
+    explicit_search: list, optional (default is None)
+	- list of priority element names you want specifically.
+	  Use argument-less list_elements() function to see all options
+
+    Priority_only:  bool, optional (default is False)  
+        - If True, only gives priority 1 or 2 elements
+
+    outfile:  str, optional (default is 'None')
+        - Replace with file name for dataframe to be wrote to as csv
+            Will be located in working directory.
+            DO NOT INCLUDE .csv IF YOU CHOOSE TO MAKE ONE
+
+    no_FAC: Bool, optional (default is False)
+	- If you don't have a FACILITY_NAME in your input, change to True
+	  NOTE: without a FACILITY_NAME, usage of other functions within library can return errors
+
+    no_MRN: Bool, optional (default is False)
+	- If you do not want output to contain MRN information, change to True
+	  NOTE: without a MRN, usage of other functions within library can return errors
+
+    no_VisNum: Bool, optional (default is False)
+	- If you do not want output to contain patient_visit_number information, change to True
+	  NOTE: without a VisNum, usage of other functions within library can return errors
+
+
+
+
     
     Returns
     -------
@@ -862,9 +920,9 @@ def NSSP_Element_Grabber(data,Timed = True, Priority_only=False, outfile='None')
     - import numpy as np
     - import time
     '''
-    # Start our runtime clock.
-    start_time = time.time()
-    
+
+    # capitalize input columns for easier matching
+    data.columns = np.array(data.columns.str.upper())
     
     # Read in reader file as pandas dataframe
 
@@ -872,21 +930,59 @@ def NSSP_Element_Grabber(data,Timed = True, Priority_only=False, outfile='None')
     FILE = pkg_resources.resource_filename('HL7reporting', 'supporting/NSSP_Element_Reader.xlsx')
     reader = pd.read_excel(FILE)
     
-    # Create empty dataframe with rows we want interpreted from reader file
+    if explicit_search != None:
+        
+        explicit_search = list(explicit_search)
+        if no_VisNum == False:
+            explicit_search.append('Visit_ID')
+        if no_MRN == False:
+            explicit_search.append('C_Unique_Patient_ID')
+        base = np.array(reader[reader['Processed Column'].isin(explicit_search)].num)
+        base = np.unique(base)
+
+        newbase = base.copy()
+        trigger = 0
+
+        while (trigger == 0):
+
+            newones = np.array(reader.loc[reader.num.isin(newbase),'dependencies'])
+            iter_nums =  []
+
+            for i in np.arange(0,len(newones)):
+                if ',' in str(newones[i]):
+                    listy = list(np.array(newones[i].split(',')).astype(int))
+                    for item in listy:
+                        iter_nums.append(item)
+                else:
+                    iter_nums.append(int(newones[i]))
+
+
+            iter_nums = np.array(iter_nums)
+            iter_nums = np.unique(iter_nums)
+
+            if len(iter_nums)==len(newbase):
+                trigger = 1
+            else:
+                newbase = iter_nums.copy()
+        
+        reader = reader.loc[reader.num.isin(newbase)]
+        
+        
+    # Create the dataframe to fill
     df = pd.DataFrame(columns=reader['Processed Column'])
-    
+        
     # Create a few extra columns straight from our data file
     df['MESSAGE'] = data['MESSAGE']
-    df['FACILITY_NAME'] = data['FACILITY_NAME']
-    df['PATIENT_VISIT_NUMBER'] = data['PATIENT_VISIT_NUMBER']
-    df['PATIENT_MRN'] = data['PATIENT_MRN']
+    
+    if no_FAC == False:
+        df['FACILITY_NAME'] = data['FACILITY_NAME']
 
     # Create a subset of rows from our reader file.  Only ones to loop through.
     # Order by 'Group_Order' so that some run before others that rely on previous.
     reader_sub = reader[reader.Ignore == 0].sort_values('Group_Order')
 
     # Loop through all data rows
-    for z in np.arange(0,len(data)):
+    for z in tqdm(np.arange(0,len(data))):
         
         # Locate our message
         message = df['MESSAGE'][z]
@@ -919,26 +1015,16 @@ def NSSP_Element_Grabber(data,Timed = True, Priority_only=False, outfile='None')
 
     # Some values may be empty strings and we do not want to count them as filled
     df = df.replace('',np.nan)
-                
-    # End time stopwatch
-    end_time = time.time()
+              
 
-    # Unless they did not want it, print runtime
-    if Timed != False:
-        print(end_time-start_time)
+    if no_VisNum == False:
+        df['PATIENT_VISIT_NUMBER'] = df['Visit_ID']
+    if no_MRN == False:
+        df['PATIENT_MRN'] = df['C_Unique_Patient_ID']  
     
     # If they only want priority elements:
     if Priority_only==True:
-        # left = all columns interpreted from reader file
-        left = df.iloc[:,:-4] 
-        # right = MESSAGE, FACNAME, PATIENT_VN, PATIENT_MRN
-        right = df.iloc[:,-4:]
-        # find all cols we want from reader file. Priority cols
-        priority_cols = reader['Processed Column'][(reader['Priority'] == 1.0)|(reader['Priority'] == 2.0)]
-        # Index our left set by these columns 
-        col_cut = left.loc[:,priority_cols]
-        # glue left indexed with right again
-        df = col_cut.join(right)
+        df = priority_cols(df,extras=['FACILITY_NAME','PATIENT_MRN','PATIENT_VISIT_NUMBER','MESSAGE'])
         
     # If they want an output file...
     if outfile!='None':
@@ -992,38 +1078,45 @@ def priority_cols(df, priority='both', extras=None, drop_cols=None):
     if priority.upper() == 'BOTH':
         cols = reader['Processed Column'][((reader.Priority == 1.0)|(reader.Priority == 2.0))]
         if extras != None:
+            extras = list(set(df.columns) & set(extras))
             cols = list(cols)
             for item in extras:
                 cols.append(item)
         new = df.loc[:,cols]
         if drop_cols != None:
+            drop_cols = list(set(df.columns) & set(drop_cols))
             new = new.drop(list(drop_cols),axis=1)
         return new
         
     elif (priority.upper() == 'ONE')|(priority == '1'):
         cols = reader['Processed Column'][(reader.Priority == 1.0)]
         if extras != None:
+            extras = list(set(df.columns) & set(extras))
             cols = list(cols)
             for item in extras:
                 cols.append(item)
         new = df.loc[:,cols]
         if drop_cols != None:
+            drop_cols = list(set(df.columns) & set(drop_cols))
             new = new.drop(list(drop_cols),axis=1)
         return new
     
     elif (priority.upper() == 'TWO')|(priority == '2'):
         cols = reader['Processed Column'][(reader.Priority == 2.0)]
         if extras != None:
+            extras = list(set(df.columns) & set(extras))
             cols = list(cols)
             for item in extras:
                 cols.append(item)
         new = df.loc[:,cols]
         if drop_cols != None:
+            drop_cols = list(set(df.columns) & set(drop_cols))
             new = new.drop(list(drop_cols),axis=1)
         return new
     
     else:
         print('Incorrect entry for specify.  Choose one of the following:  [\'both\',\'1\',\'2\']')
+
 
 ############################################################################################################
 
@@ -1887,8 +1980,8 @@ def RegEx_on_Full_DataFrame(df, find, replace):
 
 
 
-def Visualization_interactive(df_before,df_after,str_date_list,priority='both_combined',outfile=False,show_plot=False,Timed=True):
-    
+def Visualization_interactive(df_before,df_after,str_date_list,priority='both_combined',grid=True,outfile=False,show_plot=False,Timed=True):
+
     '''
     Creates an annotated heatmap that is interactive with hoverover.
     Heatmap colors represent data completeness as of the first date
@@ -1910,7 +2003,12 @@ def Visualization_interactive(df_before,df_after,str_date_list,priority='both_co
         -describes output visualization.  Valid options include 'both_combined','both_individuals','1','2'
             both_combined writes all NSSP Priority 1&2 to one x axis
             both_individual writes two separate figures for Priority 1 and 2 respectively
-            
+    
+    *grid: bool, optional (default = True)
+	-describes output visualization.  Draws grid lines over all heatmap cells.
+	    NOTE: cyan line divides priority 1 and priority 2 elements regardless of argument.
+		  only relevant for priority->both combined            
+
     *outfile: bool, optional (default = False)
         -writes .html file to folder '../figures/'
         -if str_date_list=['Feb 1 2020','Aug 31 2020'] and priority='both combined',
@@ -1933,6 +2031,19 @@ def Visualization_interactive(df_before,df_after,str_date_list,priority='both_co
     '''
     # Initialize time
     start_time = time.time()
+
+    # Only can compare across facilities in both datasets
+    fac_union = list(set(df_before.FACILITY_NAME.unique())&set(df_after.FACILITY_NAME.unique()))
+    df_before = df_before[df_before.FACILITY_NAME.isin(fac_union)]
+    df_after = df_after[df_after.FACILITY_NAME.isin(fac_union)]
+
+    # Only can compare across columns in both datasets
+    cols_union = list(set(df_before.columns) & set(df_after.columns))
+    df_before = df_before[cols_union]
+    df_after = df_after[cols_union]
+
+
+
 
     # Only Check out priority columns of our dataframes and separate by priority 1 and 2
     
@@ -1979,22 +2090,27 @@ def Visualization_interactive(df_before,df_after,str_date_list,priority='both_co
     # Find out the differences between the two dates
     #     use RegEx to add - to negative values, + to positive values, and remove 0 change to clear clutter
     priority_one = (after1_comp - before1_comp).astype(float).round(0).astype(int)
-    diffs_1 = RegEx_on_Full_DataFrame(RegEx_on_Full_DataFrame(priority_one.astype(str),'^([^-0])','+\g<1>'),'^0$','')
-
+    if len(priority_one.columns)>0:
+        diffs_1 = RegEx_on_Full_DataFrame(RegEx_on_Full_DataFrame(priority_one.astype(str),'^([^-0])','+\g<1>'),'^0$','')
+        diffs_1 = diffs_1.sort_index()
+        
     priority_two = (after2_comp - before2_comp).astype(float).round(0).astype(int)
-    diffs_2 = RegEx_on_Full_DataFrame(RegEx_on_Full_DataFrame(priority_two.astype(str),'^([^-0])','+\g<1>'),'^0$','')
+    if len(priority_two.columns)>0:
+        diffs_2 = RegEx_on_Full_DataFrame(RegEx_on_Full_DataFrame(priority_two.astype(str),'^([^-0])','+\g<1>'),'^0$','')
+        diffs_2 = diffs_2.sort_index()
+        
 
-    # Sort the indices and create a combined version with prioirty 1 and 2 elements
-    diffs_1 = diffs_1.sort_index()
-    diffs_2 = diffs_2.sort_index()
-    
-    diffs_combined = diffs_1.join(diffs_2)
-
+  
     #######################################################################
 
     # Based on user input for priority, set a few important values we'll use for plotting
     
     if priority == 'both_combined':
+        if (len(priority_two.columns)==0)|(len(priority_one.columns)==0):
+            raise ValueError("You selected priority='both_combined' (default setting) but your input dataframe(s) don't include 1+ Priority1 and 1+ Prioirty2 columns.\n  Please re-evaluate the 'priority=' argument.")
+            
+        specnum = len(diffs_1.columns)
+        diffs_combined = diffs_1.join(diffs_2)
         bases = [before_combined]
         afters = [after_combined]
         diffs = [diffs_combined]
@@ -2002,25 +2118,31 @@ def Visualization_interactive(df_before,df_after,str_date_list,priority='both_co
     
     
     elif priority == 'both_individuals':
+        if (len(priority_two.columns)==0)|(len(priority_one.columns)==0):
+            raise ValueError("You selected priority='both_individuals' but your input dataframe(s) don't include 1+ Priority1 and 1+ Prioirty2 columns.\n  Please re-evaluate the 'priority=' argument.")
         bases = [before1_comp,before2_comp]
         afters = [after1_comp,after2_comp]
         diffs = [diffs_1,diffs_2]
         prio = ['1','2']
         
     elif priority == '1':
+        if (len(priority_one.columns)==0):
+            raise ValueError("You selected priority='1' but your input dataframe(s) don't include 1+ Priority1 columns.\n  Please re-evaluate the 'priority=' argument.")
         bases = [before1_comp]
         afters = [after1_comp]
         diffs = [diffs_1]
         prio = ['1']
         
     elif priority == '2':
+        if (len(priority_two.columns)==0):
+            raise ValueError("You selected priority='2' but your input dataframe(s) don't include 1+ Priority2 columns.\n  Please re-evaluate the 'priority=' argument.")
         bases = [before2_comp]
         afters = [after2_comp]
         diffs = [diffs_2]
         prio = ['2']
         
     else:
-        print('ERROR: Please enter a correct value for priority\nOptions are \'both_combined\',\'both_individuals\',\'1\', or \'2\'')
+        raise ValueError('ERROR: Please enter a correct value for priority\nOptions are \'both_combined\',\'both_individuals\',\'1\', or \'2\'')
 
     #######################################################################
         
@@ -2055,7 +2177,11 @@ def Visualization_interactive(df_before,df_after,str_date_list,priority='both_co
         poss = RegEx_on_Full_DataFrame(pd.DataFrame(z_text).astype(str),'-.*','')
 
         #######################################################################
+        
+        if (priority == 'both_combined'):
+            pri = '1 <b>|</b> Priority 2'
 
+        
         # Create a large heatmap with descriptive title
         layout_heatmap = go.Layout(
             title=('NSSP Priority '+pri+' Element Completeness Report<br>Heatmap:  Completeness as of '+str_date_list[0]+'<br>Annotations:  Completeness change (%) as of '+str_date_list[1]),
@@ -2082,6 +2208,26 @@ def Visualization_interactive(df_before,df_after,str_date_list,priority='both_co
         fig.layout.annotations = ff_fig1.layout.annotations + ff_fig2.layout.annotations
         fig.data[0].colorbar = dict(title='Percent Complete', titleside = 'right')
         
+        
+        if (grid == True):
+            
+            # Horizontal Lines LEFT plot
+            for i in np.arange(0,len(base.index)+1):
+                fig.add_shape(type="line", x0=0-0.5, y0=i-0.5, x1=len(base.columns)-0.5, y1=i-0.5,
+                            line=dict(color="black",width=2))
+
+            # Vertical lines LEFT plot
+            for i in np.arange(0,len(base.columns)+1):
+                fig.add_shape(type="line", x0=i-0.5, y0=0-0.5, x1=i-0.5, y1=len(base.index)-0.5,
+                        line=dict(color="black",width=3))
+                
+
+        if (priority == 'both_combined'):
+            fig.add_shape(type="line", x0=specnum-0.5, y0=0-0.5, x1=specnum-0.5, y1=len(base.index)-0.5,
+                                line=dict(color="cyan",width=3))
+          
+        
+        
         # Read in optional user argument if they want to see plot
         if show_plot == True: 
             iplot(fig)
@@ -2097,6 +2243,7 @@ def Visualization_interactive(df_before,df_after,str_date_list,priority='both_co
     # If user requests to see elapsed time, show them it in seconds
     if Timed == True:
         print('Time Elapsed:   '+str(round((end_time-start_time),3))+' seconds')
+
 
 
 ###########################################################################################################################################################
