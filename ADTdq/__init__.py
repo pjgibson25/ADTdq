@@ -2213,18 +2213,20 @@ def Visualization_interactive(df_before,df_after,str_date_list,priority='both_co
 
         # Make one heatmap with positive value annotations in green (see font_colors arg)
         ff_fig1 = ff.create_annotated_heatmap(heat,x=list(x), y=list(y),annotation_text=np.array(poss), colorscale='rdylgn',hoverinfo='text',
-                                         text=hover,font_colors=['rgb(0, 253, 0)','rgb(0, 253, 0)'],showscale = True)
+                                         text=hover,font_colors=['rgb(0, 253, 0)','rgb(0, 253, 0)'],showscale = True,
+                                             zmin=0,zmax=100)
 
         # Make exact same heatmap with negative value annotations in reddish-black (see font_colors arg)
         ff_fig2 = ff.create_annotated_heatmap(heat,x=list(x), y=list(y),annotation_text=np.array(negs), colorscale='rdylgn',hoverinfo='text',
-                                         text=hover,font_colors=['rgb(76, 0, 0)','rgb(76, 0, 0)'],showscale = True)
+                                         text=hover,font_colors=['rgb(76, 0, 0)','rgb(76, 0, 0)'],showscale = True,
+                                             zmin=0,zmax=100)
 
 
         # Append out heatmap, its annotations, and a colorbar to our figure
         fig  = go.FigureWidget(ff_fig1)
         fig.layout=layout_heatmap
         fig.layout.annotations = ff_fig1.layout.annotations + ff_fig2.layout.annotations
-        fig.data[0].colorbar = dict(title='Percent Complete', titleside = 'right',tickvals=[0,25,50,75,100])
+        fig.data[0].colorbar = dict(title='Percent Complete', titleside = 'right')
         
         
         if (grid == True):
