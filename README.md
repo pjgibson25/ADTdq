@@ -744,11 +744,12 @@ Right now I don't have things set up for that sort of work.  My best solution wo
 
 #### Why isn't one of my functions working?
 
-The most common problem in this situation is a incorrectly formatted input.  Since the base of most of my DQ functions stems from an intial NSSP_Element_Grabber() run, make sure that the resulting output has the following columns:
+The most common problem in this situation is a incorrectly formatted input to a function.  Most of DQ functions stems from an intial NSSP_Element_Grabber() run.  The input to this function should contain the following columns:
 
-`['MESSAGE','PATIENT_MRN','PATIENT_VISIT_NUMBER','FACILITY_NAME'] `
+`['MESSAGE','FACILITY_NAME'] `
 
-caps DOES matter.  For functions that collapse messages into individual visits, all the columns are necissary for proper grouping.  
+Note that you can pass the argument No_FAC, No_VisNum, or No_MRN.  When these optional arguments are passed, the resulting output could return erros when used in conjunction with other DQ functions.
+This is because many of my functions collapse messages into individual visits.  The collapsing process requires Facility, MRN, and Visit Number. Missing elements in these fields throws a wrench into the process.
 
 
 #### My version is out of date (there has been a more recent release).  How do I update?
