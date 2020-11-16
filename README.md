@@ -3,6 +3,27 @@
 [Github Project](https://github.com/pjgibson25/ADTdq)
 
 
+## Setup
+
+-----------------------
+
+First off, please make sure you have a Python version >=3.6 .
+If you don't have Python, you can get it by downloading [Anaconda](https://docs.anaconda.com/anaconda/install/).
+
+You will likely have to install a few supporting packages.  In your command prompt or terminal (dependent on OS type), please type the following required dependencies.
+
+    pip install hl7
+    pip install regex
+    pip install plotly
+    pip install tqdm
+    pip install ipywidgets
+    pip install xlrd
+
+and if you didn't already install my package,
+
+    pip install ADTdq
+
+
 ## Background 
 
 -----------------------
@@ -25,6 +46,51 @@ The main purpose of this package is to give data quality analysis functions to w
 ## Functions
 <p>(click on function name for extended description)</p>
 -----------------------
+
+<details>
+<summary>list_elements</summary>
+  
+## Documentation    
+
+    list_elements(include_priority=False):
+    
+    Displays all potential elements we can search for
+
+    Parameters
+    ----------
+    include_priority: bool, optional (default is False)  
+        - returns 2 column pandas dataframe.  Element Name & Priority
+
+
+    Returns
+    -------
+    np.array() (list-like) that contains all elements we can search for
+    dataframe IF include_priority = True
+
+
+## Code Examples 
+    
+```
+# import the library and all its functions
+from HL7reporting import *
+
+# set pandas setting to disply a max of 100 rows.    
+pd.options.display.max_rows = 100   
+    
+# save elements/priority as 2 column pandas dataframe.
+a = list_elements(include_priority=True)
+a
+
+```
+## Visualization of Output
+
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/list_elements.png" alt="list_elements">
+
+<br>
+</details>
+
+
+
 
 <details>
 <summary>NSSP_Element_Grabber</summary>
@@ -99,7 +165,7 @@ parsed_df = NSSP_Element_Grabber(new_input_dataframe, Priority_only=True,outfile
 
 ## Visualization of Output
 
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/excel_out_v1.png" alt="nssp_element_grabber_visual">
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/nssp_element_grabber.png" alt="nssp_element_grabber_visual">
 
 *note personal details are replaced with random ints and NaN values
 <br>
@@ -165,119 +231,86 @@ only_priority1_df = priority_cols(parsed_df,priority='1',drop_cols=['Site_ID','C
 </details>
 
 
+
+
+
 <details>
-<summary>validity_check</summary>
+<summary>Visualization_interactive</summary>
   
 ## Documentation    
 
-    validity_check(df, Timed=True)
-    
-    Checks to see which elements in a dataframe's specific NSSP priority columns meet NSSP validity standards.
-    Returns a True/False dataframe with FACILITY_NAME,PATIENT_MRN,PATIENT_VISIT_NUMBER as only string-type columns
-    
+    Visualization_interactive(df_before,df_after,str_date_list,priority='both_combined',grid=True,outfile=False,show_plot=False,Timed=True):
+
+
+    Creates an annotated heatmap that is interactive with hoverover.
+    Heatmap colors represent data completeness as of the first date
+    Annotations show the completion percent change with respect to the second date
+        (+ indicates increased completeness)
+
     Parameters
     ----------
+    df_before : pandas.DataFrame, required (output of NSSP_Element_Grabber() Function)
+        -must be the dataframe representing EARLIER data
+        
+    df_after : pandas.DataFrame, required (output of NSSP_Element_Grabber() Function)
+        -must be the dataframe representing LATER data
+        
+    str_date_list:  list of strings, required
+        -best form example: ['Feb 1 2020','Aug 31 2020']
+        
+    *priority: str, optional (default = 'both combined')
+        -describes output visualization.  Valid options include 'both_combined','both_individuals','1','2'
+            both_combined writes all NSSP Priority 1&2 to one x axis
+            both_individual writes two separate figures for Priority 1 and 2 respectively
     
-    df - required, pandas Dataframe, output from NSSP_Element_Grabber() function    
-    Timed - optional, boolean (True/False), default is True.  Returns time in seconds of completion.
+    *grid: bool, optional (default = True)
+	-describes output visualization.  Draws grid lines over all heatmap cells.
+	    NOTE: cyan line divides priority 1 and priority 2 elements regardless of argument.
+		  only relevant for priority->both combined            
+
+    *outfile: bool, optional (default = False)
+        -writes .html file to folder '../figures/'
+        -if str_date_list=['Feb 1 2020','Aug 31 2020'] and priority='both combined',
+            outfile has name -> Feb12020_to_Aug312020_priority1and2.html
+        
+    *show_plot: bool, optional (default = False)
+        - displays the figure
+        
+    *Timed : bool, optional (default = True)
+        -gives completion time in seconds
     
     Returns
-    --------
-    validity_report - True/False dataframe with FACILITY_NAME,PATIENT_MRN,PATIENT_VISIT_NUMBER as only string-type columns
-    
+    -------
+    nothing
+        
    
 ## Code Examples 
     
 
 ```
 # import the library and all its functions
-from ADTdq import *
+from HL7reporting import *
 
-# read in data
-data1 = pd.read_csv('somefile.csv',engine='python')
+# Read in the two datasets (already ran NSSP_Element_Grabber on)
+before = pd.read_csv('path_to_parsed_df_file1',engine='python')
+after = pd.read_csv('path_to_parsed_df_file2',engine='python')
 
-# process through NSSP_Element_Grabber() function
-parsed_df = NSSP_Element_Grabber(data1,Timed=False,
-                                    Priority_only=True,outfile='None')
-
-
-# take the priority element columns from our output dataframe
-#### remove two columns that are processed backend (always NaN)
-only_priority1_df = priority_cols(parsed_df,priority='1',drop_cols=['Site_ID','C_Facility_ID'])
-
-# run the validity check function on it
-val = validity_check(only_priority1_df)
+Visualization_interactive(before,after,['Oct 11 2020','Oct 28 2020'],priority='both_combined',outfile=True,show_plot=False)
 
 ```
 
 ## Visualization of Output
 
-<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/validity_check.png" alt="validity_check_Visual">
+<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/Visualization_interactive.png" alt="Visualization_interactive_Visual">
 
-*note the lower number of columns.  Not all columns able to be assessed for validity
+*note that this image above is simply an image.  In reality the output is an interactive HTML file with hover_over capabilities
+*also note that the y axis is marked over and typically contains facility names.
 <br>
 </details>
 
 
 
 
-
-<details>
-<summary>Visualize_Facility_DQ</summary>
-  
-## Documentation    
-
-    Visualize_Facility_DQ(df, fac_name, hide_yticks = False, Timed = True)
-    
-	
-    Returns Visualization of data quality in the form of a heatmap.
-    Rows are all individual visits for the inputted facility.
-    Columns are NSSP Priority elements that can be checked for validity.
-    Color shows valid entries (green), invalid entries (yellow), and absent entries (red)
-    
-    Parameters
-    ----------
-    
-    df - required, pandas Dataframe, output from NSSP_Element_Grabber() function
-    fac_name - required, str, valid name of facility.
-        if unsure of valid entry options, use the following code for options:
-        df['FACILITY_NAME'].unique()   # may need to change for your df name
-    
-    Returns
-    --------
-    out[0] = Pandas dataframe used to create visualization.  2D composed of 0s (red), 1s (yellow), 2s (green)
-    out[1] = Pandas dataframe of data behind visit.  Multiple HL7 messages composing 1 visit concatenated by '~' character
-    
-    Output
-    -------
-    sns.heatmap visualization
-
-## Code Examples 
-    
-
-```
-# import the library and all its functions
-from ADTdq import *
-
-# read in data
-data1 = pd.read_csv('somefile.csv',engine='python')
-
-# process through NSSP_Element_Grabber() function
-parsed_df = NSSP_Element_Grabber(data1,Timed=False,
-                                    Priority_only=True,outfile='None')
-
-# produce the visualization
-visual = Visualize_Facility_DQ(parsed_df, 'hospital_name')
-```
-
-## Visualization of Output
-
-<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/Visualize_Facility_DQ.png" alt="Visualize_Facility_DQ_Visual">
-
-*note that this only produces the visualization for 1 facility
-
-<br>
-</details>
 
 
 
@@ -424,6 +457,73 @@ Version 2
 
 
 
+
+
+
+
+
+
+
+
+
+<details>
+<summary>validity_check</summary>
+  
+## Documentation    
+
+    validity_check(df, Timed=True)
+    
+    Checks to see which elements in a dataframe's specific NSSP priority columns meet NSSP validity standards.
+    Returns a True/False dataframe with FACILITY_NAME,PATIENT_MRN,PATIENT_VISIT_NUMBER as only string-type columns
+    
+    Parameters
+    ----------
+    
+    df - required, pandas Dataframe, output from NSSP_Element_Grabber() function    
+    Timed - optional, boolean (True/False), default is True.  Returns time in seconds of completion.
+    
+    Returns
+    --------
+    validity_report - True/False dataframe with FACILITY_NAME,PATIENT_MRN,PATIENT_VISIT_NUMBER as only string-type columns
+    
+   
+## Code Examples 
+    
+
+```
+# import the library and all its functions
+from ADTdq import *
+
+# read in data
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(data1,Timed=False,
+                                    Priority_only=True,outfile='None')
+
+
+# take the priority element columns from our output dataframe
+#### remove two columns that are processed backend (always NaN)
+only_priority1_df = priority_cols(parsed_df,priority='1',drop_cols=['Site_ID','C_Facility_ID'])
+
+# run the validity check function on it
+val = validity_check(only_priority1_df)
+
+```
+
+## Visualization of Output
+
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/validity_check.png" alt="validity_check_Visual">
+
+*note the lower number of columns.  Not all columns able to be assessed for validity
+<br>
+</details>
+
+
+
+
+
+
 <details>
 <summary>validity_and_completeness_report</summary>
   
@@ -485,82 +585,6 @@ val = validity_and_completeness_report(parsed_df, description='long')[0] # don't
 
 <img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/validity_and_completeness_report.png" alt="validity_and_completeness_report_Visual">
 
-<br>
-</details>
-
-
-
-<details>
-<summary>Visualization_interactive</summary>
-  
-## Documentation    
-
-    Visualization_interactive(df_before,df_after,str_date_list,priority='both_combined',grid=True,outfile=False,show_plot=False,Timed=True):
-
-
-    Creates an annotated heatmap that is interactive with hoverover.
-    Heatmap colors represent data completeness as of the first date
-    Annotations show the completion percent change with respect to the second date
-        (+ indicates increased completeness)
-
-    Parameters
-    ----------
-    df_before : pandas.DataFrame, required (output of NSSP_Element_Grabber() Function)
-        -must be the dataframe representing EARLIER data
-        
-    df_after : pandas.DataFrame, required (output of NSSP_Element_Grabber() Function)
-        -must be the dataframe representing LATER data
-        
-    str_date_list:  list of strings, required
-        -best form example: ['Feb 1 2020','Aug 31 2020']
-        
-    *priority: str, optional (default = 'both combined')
-        -describes output visualization.  Valid options include 'both_combined','both_individuals','1','2'
-            both_combined writes all NSSP Priority 1&2 to one x axis
-            both_individual writes two separate figures for Priority 1 and 2 respectively
-    
-    *grid: bool, optional (default = True)
-	-describes output visualization.  Draws grid lines over all heatmap cells.
-	    NOTE: cyan line divides priority 1 and priority 2 elements regardless of argument.
-		  only relevant for priority->both combined            
-
-    *outfile: bool, optional (default = False)
-        -writes .html file to folder '../figures/'
-        -if str_date_list=['Feb 1 2020','Aug 31 2020'] and priority='both combined',
-            outfile has name -> Feb12020_to_Aug312020_priority1and2.html
-        
-    *show_plot: bool, optional (default = False)
-        - displays the figure
-        
-    *Timed : bool, optional (default = True)
-        -gives completion time in seconds
-    
-    Returns
-    -------
-    nothing
-        
-   
-## Code Examples 
-    
-
-```
-# import the library and all its functions
-from HL7reporting import *
-
-# Read in the two datasets (already ran NSSP_Element_Grabber on)
-before = pd.read_csv('path_to_parsed_df_file1',engine='python')
-after = pd.read_csv('path_to_parsed_df_file2',engine='python')
-
-Visualization_interactive(before,after,['Oct 11 2020','Oct 28 2020'],priority='both_combined',outfile=True,show_plot=False)
-
-```
-
-## Visualization of Output
-
-<img src="https://github.com/pjgibson25/HL7reporting/raw/master/pics/Visualization_interactive.png" alt="Visualization_interactive_Visual">
-
-*note that this image above is simply an image.  In reality the output is an interactive HTML file with hover_over capabilities
-*also note that the y axis is marked over and typically contains facility names.
 <br>
 </details>
 
@@ -630,6 +654,64 @@ heatmap_compNvalid(parsed_df, outfilename='heatmap visualization completion and 
 
 
 
+<details>
+<summary>Visualize_Facility_DQ</summary>
+  
+## Documentation    
+
+    Visualize_Facility_DQ(df, fac_name, hide_yticks = False, Timed = True)
+    
+	
+    Returns Visualization of data quality in the form of a heatmap.
+    Rows are all individual visits for the inputted facility.
+    Columns are NSSP Priority elements that can be checked for validity.
+    Color shows valid entries (green), invalid entries (yellow), and absent entries (red)
+    
+    Parameters
+    ----------
+    
+    df - required, pandas Dataframe, output from NSSP_Element_Grabber() function
+    fac_name - required, str, valid name of facility.
+        if unsure of valid entry options, use the following code for options:
+        df['FACILITY_NAME'].unique()   # may need to change for your df name
+    
+    Returns
+    --------
+    out[0] = Pandas dataframe used to create visualization.  2D composed of 0s (red), 1s (yellow), 2s (green)
+    out[1] = Pandas dataframe of data behind visit.  Multiple HL7 messages composing 1 visit concatenated by '~' character
+    
+    Output
+    -------
+    sns.heatmap visualization
+
+## Code Examples 
+    
+
+```
+# import the library and all its functions
+from ADTdq import *
+
+# read in data
+data1 = pd.read_csv('somefile.csv',engine='python')
+
+# process through NSSP_Element_Grabber() function
+parsed_df = NSSP_Element_Grabber(data1,Timed=False,
+                                    Priority_only=True,outfile='None')
+
+# produce the visualization
+visual = Visualize_Facility_DQ(parsed_df, 'hospital_name')
+```
+
+## Visualization of Output
+
+<img src="https://github.com/pjgibson25/ADTdq/raw/master/pics/Visualize_Facility_DQ.png" alt="Visualize_Facility_DQ_Visual">
+
+*note that this only produces the visualization for 1 facility
+
+<br>
+</details>
+
+
 
 
 
@@ -660,13 +742,20 @@ I could be wrong, but I believe that one day, public health informatics may beco
 Right now I don't have things set up for that sort of work.  My best solution would be for you to dive into my Github reposiory python file linked [here](https://github.com/pjgibson25/ADTdq/blob/master/ADTdq/__init__.py).  You can copy the defined functions into your document and make minor adjustments as you see fit.
 
 
-#### Why isn't the NSSP_Element_Grabber() function working?
+#### Why isn't one of my functions working?
 
-The most common problem in this situation is a incorrectly formatted input.  The input needs to be a pandas dataframe containing the following columns:
+The most common problem in this situation is a incorrectly formatted input.  Since the base of most of my DQ functions stems from an intial NSSP_Element_Grabber() run, make sure that the resulting output has the following columns:
 
 `['MESSAGE','PATIENT_MRN','PATIENT_VISIT_NUMBER','FACILITY_NAME'] `
 
-caps DOES matter.  If your raw data file does not contain MRN, visit number, or facility name, you may create a dataframe with all NaN values for these columns and the function should still work properly.
+caps DOES matter.  For functions that collapse messages into individual visits, all the columns are necissary for proper grouping.  
+
+
+#### My version is out of date (there has been a more recent release).  How do I update?
+
+Type the following into your command line / terminal
+
+    pip install ADTdq --update
 
 
 #### My question isn't listed above...what should I do?

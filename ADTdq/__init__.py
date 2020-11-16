@@ -853,8 +853,10 @@ def list_elements(include_priority=False):
     dataframe IF include_priority = True
     '''
 
+    DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+    FILE = pkg_resources.resource_filename('ADTdq', 'supporting/NSSP_Element_Reader.xlsx')
+    els = pd.read_excel(FILE)
 
-    els = pd.read_excel('supporting/NSSP_Element_Reader.xlsx')
     if include_priority == True:
         return els[['Processed Column','Priority']]
     else:
@@ -864,7 +866,23 @@ def list_elements(include_priority=False):
 ############################################################################################################
 
 
+def return_NSSPElementReader():
+    DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+    FILE = pkg_resources.resource_filename('ADTdq', 'supporting/NSSP_Element_Reader.xlsx')
+    reader = pd.read_excel(FILE)
+    return reader
 
+def return_NSSPValidityReader():
+    DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+    FILE = pkg_resources.resource_filename('ADTdq', 'supporting/NSSP_Validity_Reader.xlsx')
+    reader = pd.read_excel(FILE)
+    return reader
+
+def return_MessageCorrectorKey():
+    DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+    FILE = pkg_resources.resource_filename('ADTdq', 'supporting/Message_Corrector_Key.xlsx')
+    reader = pd.read_excel(FILE)
+    return reader
 
 
 
@@ -926,8 +944,8 @@ def NSSP_Element_Grabber(data,explicit_search=None,Priority_only=False,outfile='
     
     # Read in reader file as pandas dataframe
 
-    DATA_PATH = pkg_resources.resource_filename('HL7reporting', 'supporting/')
-    FILE = pkg_resources.resource_filename('HL7reporting', 'supporting/NSSP_Element_Reader.xlsx')
+    DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+    FILE = pkg_resources.resource_filename('ADTdq', 'supporting/NSSP_Element_Reader.xlsx')
     reader = pd.read_excel(FILE)
     
     if explicit_search != None:
@@ -937,7 +955,7 @@ def NSSP_Element_Grabber(data,explicit_search=None,Priority_only=False,outfile='
             explicit_search.append('Visit_ID')
         if no_MRN == False:
             explicit_search.append('C_Unique_Patient_ID')
-        base = np.array(reader[reader['Processed Column'].isin(explicit_search)].num)
+        base = np.array(reader[reader['Processed Column'].isin(explicit_search)]['num'])
         base = np.unique(base)
 
         newbase = base.copy()
@@ -1066,8 +1084,8 @@ def priority_cols(df, priority='both', extras=None, drop_cols=None):
     -import pandas as pd
     '''
 
-    DATA_PATH = pkg_resources.resource_filename('HL7reporting', 'supporting/')
-    FILE = pkg_resources.resource_filename('HL7reporting', 'supporting/NSSP_Element_Reader.xlsx')
+    DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+    FILE = pkg_resources.resource_filename('ADTdq', 'supporting/NSSP_Element_Reader.xlsx')
     reader = pd.read_excel(FILE)
 
 
@@ -1153,8 +1171,8 @@ def validity_check(df, Timed=True):
     
     # Read in the validity key
 
-    DATA_PATH = pkg_resources.resource_filename('HL7reporting', 'supporting/')
-    FILE = pkg_resources.resource_filename('HL7reporting', 'supporting/NSSP_Validity_Reader.xlsx')
+    DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+    FILE = pkg_resources.resource_filename('ADTdq', 'supporting/NSSP_Validity_Reader.xlsx')
     key = pd.read_excel(FILE)
 
     # There is a chance that the user had decided to get rid of columns we typically check for validity.
@@ -1209,7 +1227,7 @@ def validity_check(df, Timed=True):
 
         elif (row_bounds == row_bounds):
             num = 120
-            validity_report[col_name] = pd.to_numeric(df[col_name]) < num
+            validity_report[col_name] = pd.to_numeric(df[col_name],errors='coerce') < num
 
         elif (row_format == row_format):
             search = row_format
@@ -1269,8 +1287,8 @@ def Visualize_Facility_DQ(df, fac_name, hide_yticks = False, Timed = True):
     hosp_visits = df[df.FACILITY_NAME==fac_name]
 
     # Read in our validity key
-    DATA_PATH = pkg_resources.resource_filename('HL7reporting', 'supporting/')
-    FILE = pkg_resources.resource_filename('HL7reporting', 'supporting/NSSP_Validity_Reader.xlsx')
+    DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+    FILE = pkg_resources.resource_filename('ADTdq', 'supporting/NSSP_Validity_Reader.xlsx')
     key = pd.read_excel(FILE)
 
     # There is a chance that the user had decided to get rid of columns we typically check for validity.
@@ -1554,8 +1572,8 @@ def issues_in_messages(df, Timed=True, combine_issues_on_message = False, split_
     ########################################################################################################
 
     # Load our key and set its index
-    DATA_PATH = pkg_resources.resource_filename('HL7reporting', 'supporting/')
-    FILE = pkg_resources.resource_filename('HL7reporting', 'supporting/Message_Corrector_Key.xlsx')
+    DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+    FILE = pkg_resources.resource_filename('ADTdq', 'supporting/Message_Corrector_Key.xlsx')
     key = pd.read_excel(FILE)
 
     key = key.set_index('Element')
@@ -1803,7 +1821,7 @@ def validity_and_completeness_report(df,description='long',visit_count=False,out
 
 
     # Create empty dataframe to append our information to 
-    empty['Description'] = [np.nan]*len(df012s)
+    empty['Description'] = [np.nan]*(len(df012s.FacName.unique())*43*2)
 
     # Set initial index
     cur_num = 0
@@ -1874,8 +1892,8 @@ def validity_and_completeness_report(df,description='long',visit_count=False,out
 
     if description == 'long':
 
-        DATA_PATH = pkg_resources.resource_filename('HL7reporting', 'supporting/')
-        FILE = pkg_resources.resource_filename('HL7reporting', 'supporting/Message_Corrector_Key.xlsx')
+        DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+        FILE = pkg_resources.resource_filename('ADTdq', 'supporting/Message_Corrector_Key.xlsx')
         key = pd.read_excel(FILE)
 
 
@@ -1886,8 +1904,8 @@ def validity_and_completeness_report(df,description='long',visit_count=False,out
 
     elif description == 'short':
 
-        DATA_PATH = pkg_resources.resource_filename('HL7reporting', 'supporting/')
-        FILE = pkg_resources.resource_filename('HL7reporting', 'supporting/NSSP_Element_Reader.xlsx')
+        DATA_PATH = pkg_resources.resource_filename('ADTdq', 'supporting/')
+        FILE = pkg_resources.resource_filename('ADTdq', 'supporting/NSSP_Element_Reader.xlsx')
         key = pd.read_excel(FILE)
 
         key = key.set_index('Processed Column')
