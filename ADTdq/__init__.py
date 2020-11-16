@@ -2224,7 +2224,7 @@ def Visualization_interactive(df_before,df_after,str_date_list,priority='both_co
         fig  = go.FigureWidget(ff_fig1)
         fig.layout=layout_heatmap
         fig.layout.annotations = ff_fig1.layout.annotations + ff_fig2.layout.annotations
-        fig.data[0].colorbar = dict(title='Percent Complete', titleside = 'right')
+        fig.data[0].colorbar = dict(title='Percent Complete', titleside = 'right',tickvals=[0,25,50,75,100])
         
         
         if (grid == True):
