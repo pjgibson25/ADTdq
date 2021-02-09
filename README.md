@@ -30,7 +30,7 @@ and if you didn't already install my package,
 
 #### How it Started
 
-My name is PJ Gibson and I am a data analyst with the Indiana State Department of Health.
+My name is PJ Gibson and I created this python library while working as a data analyst with the Indiana State Department of Health.
 My Informatics department arranged a grant with a group who could improve the quality of hospital reporting.
 We needed to track the progress of this hospital reporting, which required diving into HL7 Admission/Discharge/Transfer (ADT) messages and assessing for data completion and validity.
 Enter me.
@@ -763,12 +763,12 @@ Type the following into your command line / terminal
 
 feel free to contact me at:
 
-PGibson@isdh.IN.gov 
+Peter.Gibson@doh.wa.gov
 
 with any additional questions.
 
 ## The Author
-PJ Gibson - Data Analyst for Indiana State Department of Health
+PJ Gibson - Data Analyst for Washington State Department of Health
 
 ## Special Thanks
 * Harold Gil - Director of Public Health Informatics for Indiana State Department of Health.
